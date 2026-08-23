@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 const pushEnv = (key, value) => {
   if (!value) return;
@@ -14,4 +14,4 @@ const pushEnv = (key, value) => {
   }
 };
 
-pushEnv('VITE_API_URL', 'https://backend-mu-liart-86.vercel.app/api');
+pushEnv('VITE_API_URL', 'https://cancalcultorbackend.vercel.app/api');
