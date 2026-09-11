@@ -35,9 +35,9 @@ const Reports = () => {
     text += `Total Pending Payments: ₹${stats.pendingPaymentsTotal.toLocaleString()}\n\n`;
 
     text += `*20L Cans Inventory:*\n`;
-    text += `Total Stock: 170\n`;
+    text += `Total Stock: 165\n`;
     text += `With Customers: ${stats.totalMissingCans}\n`;
-    text += `In Stock Now: ${170 - stats.totalMissingCans}\n\n`;
+    text += `In Stock Now: ${165 - stats.totalMissingCans}\n\n`;
 
     const customersWithDues = customers.filter(c => c.balance > 0);
     if (customersWithDues.length > 0) {
@@ -139,7 +139,7 @@ const Reports = () => {
                 <Package className="w-24 h-24" />
               </div>
               <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-2">Total Stock</p>
-              <h4 className="text-5xl font-black text-blue-900 drop-shadow-sm">170</h4>
+              <h4 className="text-5xl font-black text-blue-900 drop-shadow-sm">165</h4>
               <p className="text-xs font-medium text-blue-500 mt-2">Total 20L Cans Owned</p>
             </div>
             <div className="p-6 bg-gradient-to-b from-orange-50 to-white rounded-2xl border border-orange-100/50 shadow-sm relative overflow-hidden group">
@@ -155,7 +155,7 @@ const Reports = () => {
                 <Truck className="w-24 h-24" />
               </div>
               <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-2">In Stock Now</p>
-              <h4 className="text-5xl font-black text-emerald-900 drop-shadow-sm">{170 - stats.totalMissingCans}</h4>
+              <h4 className="text-5xl font-black text-emerald-900 drop-shadow-sm">{165 - stats.totalMissingCans}</h4>
               <p className="text-xs font-medium text-emerald-500 mt-2">Ready for Delivery</p>
             </div>
           </div>
