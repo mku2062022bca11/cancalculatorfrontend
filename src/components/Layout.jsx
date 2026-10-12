@@ -9,7 +9,8 @@ import {
   LogOut, 
   Menu, 
   X,
-  FileText
+  FileText,
+  Wallet
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -23,6 +24,7 @@ const Layout = ({ children }) => {
     { name: 'Customers (வாடிக்கையாளர்கள்)', href: '/customers', icon: Users },
     { name: 'Deliveries (விநியோகங்கள்)', href: '/deliveries', icon: Truck },
     { name: 'Payments (பணப்பரிவர்த்தனைகள்)', href: '/payments', icon: CreditCard },
+    { name: 'Expenses (செலவுகள்)', href: '/expenses', icon: Wallet },
     { name: 'Reports (அறிக்கைகள்)', href: '/reports', icon: FileText },
   ];
 

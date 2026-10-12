@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { FileText, Share2, AlertCircle, IndianRupee, TrendingUp, Truck, Package } from 'lucide-react';
+import { FileText, Share2, AlertCircle, IndianRupee, TrendingUp, Truck, Package, Wallet, Fuel } from 'lucide-react';
+
+const StatCard = ({ title, value, icon: _Icon, gradientClass, textColor }) => (
+  <div className={`card bg-gradient-to-br ${gradientClass} border-none overflow-hidden relative group p-5`}>
+    <div className="absolute top-0 right-0 p-3 opacity-10 transform group-hover:scale-110 transition-transform duration-500">
+      <_Icon className={`h-16 w-16 ${textColor}`} />
+    </div>
+    <div className="relative z-10">
+      <div className="flex items-center justify-between mb-2">
+        <p className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>{title}</p>
+      </div>
+      <h3 className={`text-3xl font-black ${textColor}`}>
+        {value}
+      </h3>
+    </div>
+  </div>
+);
+
+const TOTAL_CANS_OWNED = 222;
 
 const Reports = () => {
   const [customers, setCustomers] = useState([]);
@@ -15,7 +33,39 @@ const Reports = () => {
           api.get('/dashboard/stats')
         ]);
         setCustomers(cRes.data);
-        setStats(sRes.data);
+        
+        let statData = sRes.data;
+        let tExp = statData.todayExpense || 0;
+        let totExp = statData.totalExpense || 0;
+
+        // Try getting expense stats or read local cache
+        try {
+          const expRes = await api.get('/expenses/stats');
+          if (expRes.data) {
+            tExp = expRes.data.todayExpense || tExp;
+            totExp = expRes.data.totalExpense || totExp;
+          }
+        } catch {
+          const cached = localStorage.getItem('ss_water_expenses_cache');
+          if (cached) {
+            try {
+              const exps = JSON.parse(cached);
+              const todayStr = new Date().toISOString().split('T')[0];
+              tExp = exps
+                .filter(e => e.date && e.date.startsWith(todayStr))
+                .reduce((s, e) => s + (Number(e.amount) || 0), 0);
+              totExp = exps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+
+        statData.todayExpense = tExp;
+        statData.totalExpense = totExp;
+        statData.todayNetProfit = (statData.todayIncome || 0) - tExp;
+
+        setStats(statData);
       } catch (error) {
         console.error('Error fetching report data', error);
       } finally {
@@ -28,16 +78,20 @@ const Reports = () => {
   const handleSendReport = () => {
     if (!stats || customers.length === 0) return;
 
-    let text = `*Daily Business Report*\n\n`;
-    text += `*Overview:*\n`;
+    const netProfit = (stats.todayIncome || 0) - (stats.todayExpense || 0);
+
+    let text = `*📊 Daily Business & Profit Report*\n\n`;
+    text += `*Overview (இன்றைய நிலை):*\n`;
     text += `Deliveries Today: ${stats.todayDeliveriesCount}\n`;
     text += `Income Today: ₹${stats.todayIncome.toLocaleString()}\n`;
-    text += `Total Pending Payments: ₹${stats.pendingPaymentsTotal.toLocaleString()}\n\n`;
+    text += `Expenses Today: ₹${(stats.todayExpense || 0).toLocaleString()}\n`;
+    text += `*Net Profit Today: ₹${netProfit.toLocaleString()}*\n`;
+    text += `Total Pending Due: ₹${stats.pendingPaymentsTotal.toLocaleString()}\n\n`;
 
-    text += `*20L Cans Inventory:*\n`;
-    text += `Total Stock: 165\n`;
+    text += `*20L Cans Inventory (சரக்கு இருப்பு):*\n`;
+    text += `Total Stock: ${TOTAL_CANS_OWNED}\n`;
     text += `With Customers: ${stats.totalMissingCans}\n`;
-    text += `In Stock Now: ${165 - stats.totalMissingCans}\n\n`;
+    text += `In Stock Now: ${TOTAL_CANS_OWNED - stats.totalMissingCans}\n\n`;
 
     const customersWithDues = customers.filter(c => c.balance > 0);
     if (customersWithDues.length > 0) {
@@ -65,22 +119,6 @@ const Reports = () => {
   const customersWithDues = customers.filter(c => c.balance > 0);
   const customersWithCans = customers.filter(c => c.pendingEmptyCans > 0);
 
-  const StatCard = ({ title, value, icon: Icon, gradientClass, textColor }) => (
-    <div className={`card bg-gradient-to-br ${gradientClass} border-none overflow-hidden relative group p-5`}>
-      <div className="absolute top-0 right-0 p-3 opacity-10 transform group-hover:scale-110 transition-transform duration-500">
-        <Icon className={`h-16 w-16 ${textColor}`} />
-      </div>
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-2">
-          <p className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>{title}</p>
-        </div>
-        <h3 className={`text-3xl font-black ${textColor}`}>
-          {value}
-        </h3>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -94,13 +132,27 @@ const Reports = () => {
       </div>
 
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <StatCard
             title="Today's Income"
             value={`₹${stats.todayIncome.toLocaleString()}`}
             icon={IndianRupee}
             gradientClass="from-emerald-400/10 to-teal-500/20"
             textColor="text-emerald-700"
+          />
+          <StatCard
+            title="Today's Expenses"
+            value={`₹${(stats.todayExpense || 0).toLocaleString()}`}
+            icon={Fuel}
+            gradientClass="from-rose-500/10 to-red-600/20"
+            textColor="text-rose-700"
+          />
+          <StatCard
+            title="Today's Profit"
+            value={`₹${((stats.todayIncome || 0) - (stats.todayExpense || 0)).toLocaleString()}`}
+            icon={TrendingUp}
+            gradientClass="from-indigo-500/10 to-purple-600/20"
+            textColor="text-indigo-700"
           />
           <StatCard
             title="Today's Deliveries"
@@ -110,11 +162,11 @@ const Reports = () => {
             textColor="text-blue-700"
           />
           <StatCard
-            title="Total Pending Dues"
+            title="Pending Dues"
             value={`₹${stats.pendingPaymentsTotal.toLocaleString()}`}
             icon={IndianRupee}
-            gradientClass="from-red-500/10 to-rose-600/20"
-            textColor="text-red-700"
+            gradientClass="from-amber-500/10 to-orange-600/20"
+            textColor="text-amber-700"
           />
           <StatCard
             title="Missing Cans"
@@ -139,7 +191,7 @@ const Reports = () => {
                 <Package className="w-24 h-24" />
               </div>
               <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-2">Total Stock</p>
-              <h4 className="text-5xl font-black text-blue-900 drop-shadow-sm">165</h4>
+              <h4 className="text-5xl font-black text-blue-900 drop-shadow-sm">{TOTAL_CANS_OWNED}</h4>
               <p className="text-xs font-medium text-blue-500 mt-2">Total 20L Cans Owned</p>
             </div>
             <div className="p-6 bg-gradient-to-b from-orange-50 to-white rounded-2xl border border-orange-100/50 shadow-sm relative overflow-hidden group">
@@ -155,7 +207,7 @@ const Reports = () => {
                 <Truck className="w-24 h-24" />
               </div>
               <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-2">In Stock Now</p>
-              <h4 className="text-5xl font-black text-emerald-900 drop-shadow-sm">{165 - stats.totalMissingCans}</h4>
+              <h4 className="text-5xl font-black text-emerald-900 drop-shadow-sm">{TOTAL_CANS_OWNED - stats.totalMissingCans}</h4>
               <p className="text-xs font-medium text-emerald-500 mt-2">Ready for Delivery</p>
             </div>
           </div>

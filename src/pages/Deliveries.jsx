@@ -48,8 +48,6 @@ const Deliveries = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const calculateTotal = (item) => item.quantity * item.rate;
-
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
@@ -80,6 +78,7 @@ const Deliveries = () => {
       setItems([{ itemType: '20L Water Can', quantity: 1, rate: 0, total: 0 }]);
       setEmptyCansCollected(0);
       setCustomerId('');
+      setNotes('');
       fetchData();
     } catch (error) {
       console.error('Error saving delivery', error);
@@ -329,6 +328,17 @@ const Deliveries = () => {
                   </div>
                 </div>
               )}
+
+              <div>
+                <label className="label-field">Delivery Notes (குறிப்புகள்)</label>
+                <input 
+                  type="text" 
+                  className="input-field shadow-sm" 
+                  placeholder="e.g. Leave at door, Special instructions" 
+                  value={notes} 
+                  onChange={e => setNotes(e.target.value)} 
+                />
+              </div>
 
               <div className="flex justify-between items-center bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-2xl shadow-xl text-white">
                 <span className="font-semibold text-slate-300 uppercase tracking-widest text-sm">Grand Total Amount</span>

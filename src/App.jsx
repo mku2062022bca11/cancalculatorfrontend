@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Deliveries from './pages/Deliveries';
 import Payments from './pages/Payments';
+import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
 
 const ProtectedRoute = ({ children }) => {
@@ -28,6 +29,7 @@ function AppRoutes() {
       <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
       <Route path="/deliveries" element={<ProtectedRoute><Deliveries /></ProtectedRoute>} />
       <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
+      <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     </Routes>
   );
