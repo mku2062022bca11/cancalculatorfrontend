@@ -18,7 +18,7 @@ const StatCard = ({ title, value, icon: _Icon, gradientClass, textColor }) => (
   </div>
 );
 
-const TOTAL_CANS_OWNED = 222;
+const TOTAL_CANS_OWNED = 220;
 
 const Reports = () => {
   const [customers, setCustomers] = useState([]);
